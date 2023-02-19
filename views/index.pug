@@ -7,10 +7,11 @@ html(lang="ko")
     title To-Do App
   body
     h1 To-Do App (SSR)
-    form(action="/todo", method="post")
+    form(action="/todo", method="post" name="content")
       input(type="text")
     ul
       each todo in todoList
         li
           span= todo.content
           button ❌
+    button Clear
