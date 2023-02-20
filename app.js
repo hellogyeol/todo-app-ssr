@@ -12,6 +12,7 @@ const client = new MongoClient(url);
 /* Express */
 
 /* express 사용에 필요한 변수 */
+const methodOverride = require('method-override');
 const express = require('express');
 const app = express();
 const port = 3000;  // 사용할 포트 번호
@@ -22,17 +23,21 @@ app.set('view engine', 'pug');
 /* 클라이언트의 fetch(body) 요청 해석 */
 app.use(express.urlencoded({extended: true}));  // form으로 전달 받은 값 인코딩
 app.use(express.json());  // JSON 데이터 해석
+app.use(methodOverride('_method'));
 
 /* 라우팅 */
 app.get('/', (req, res) => {
   renderToDoList(res);
 });
 
+app.post('/', (req, res) => {
+  clearToDoList(res);
+});
+
 /* 웹서버 포트 지정 */
 app.listen(port, () => {
   console.log(`To-Do app listening on port ${port}`);
 });
-
 
 /* 함수 선언 */
 
@@ -49,4 +54,13 @@ async function renderToDoList(res) {
   res.render('index', {
     todoList: todoList
   });
+}
+
+async function clearToDoList(res) {
+  await client.connect();
+  const col = client.db('ssrDb').collection('ssrCol');
+  await col.deleteMany({})
+  const todoList = await col.find({}).toArray();
+
+  res.send(todoList);
 }
