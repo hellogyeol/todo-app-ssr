@@ -23,6 +23,7 @@ app.set('view engine', 'pug');
 /* 클라이언트의 fetch(body) 요청 해석 */
 app.use(express.urlencoded({extended: true}));  // form으로 전달 받은 값 인코딩
 app.use(express.json());  // JSON 데이터 해석
+
 app.use(methodOverride('_method'));
 
 /* 라우팅 */
@@ -32,6 +33,10 @@ app.get('/', (req, res) => {
 
 app.post('/', (req, res) => {
   clearToDoList(res);
+});
+
+app.post('/todo', (req, res) => {
+  addToDo(req, res);
 });
 
 /* 웹서버 포트 지정 */
@@ -61,6 +66,24 @@ async function clearToDoList(res) {
   const col = client.db('ssrDb').collection('ssrCol');
   await col.deleteMany({})
   const todoList = await col.find({}).toArray();
+  console.log(todoList);
 
-  res.send(todoList);
+  res.render('index', {
+    todoList: todoList
+  });
+}
+
+async function addToDo(req, res) {
+  await client.connect();
+  const col = client.db('ssrDb').collection('ssrCol');
+  await col.insertOne({
+    id: String(Date.now()),
+    content: req.body.content
+  });
+  const todoList = await col.find({}).toArray();
+  console.log(todoList);
+
+  res.render('index', {
+    todoList: todoList
+  });
 }
