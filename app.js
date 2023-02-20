@@ -28,18 +28,6 @@ app.get('/', (req, res) => {
   renderToDoList(res);
 });
 
-app.delete('/', (req, res) => {
-  clearTodoList(res);
-});
-
-app.post('/todo', (req, res) => {
-  addTodo(req, res);
-});
-
-app.delete('/todo', (req, res) => {
-  deleteTodo(req, res);
-});
-
 /* 웹서버 포트 지정 */
 app.listen(port, () => {
   console.log(`To-Do app listening on port ${port}`);
@@ -57,55 +45,6 @@ async function renderToDoList(res) {
   const col = client.db('ssrDb').collection('ssrCol');
   const todoList = await col.find({}).toArray();
   console.log(todoList);
-
-  res.render('index', {
-    todoList: todoList
-  });
-}
-
-/**
- * To-Do 목록 초기화 함수.
- * DB에서 목록을 초기화한 후 클라이언트에게 전달
- */
-async function clearTodoList(res) {
-  await client.connect();
-  const col = client.db('ssrDb').collection('ssrCol');
-  await col.deleteMany({})
-  const todoList = await col.find({}).toArray();
-
-  res.render('index', {
-    todoList: todoList
-  });
-}
-
-/**
- * To-Do 생성 함수.
- * 새로운 To-Do를 DB에 추가 후 전체 목록을 클라이언트에게 전달
- */
-async function addTodo(req, res) {
-  await client.connect();
-  const col = client.db('ssrDb').collection('ssrCol');
-  await col.insertOne({
-    id: String(Date.now()),  // 현재 시각의 타임스탬프를 고유 ID로 설정
-    content: req.body.content  // form으로 전달 받은 사용자 입력값
-  });
-  const todoList = await col.find({}).toArray();
-
-  res.render('index', {
-    todoList: todoList
-  });
-}
-
-/**
- * To-Do 삭제 함수.
- * 선택한 To-Do의 HTML 요소 ID와 일치하는 ID를 가진 항목을 DB에서 삭제 후
- * 전체 목록을 클라이언트에게 전달
- */
-async function deleteTodo(req, res) {
-  await client.connect();
-  const col = client.db('ssrDb').collection('ssrCol');
-  await col.deleteOne({id: req.body.id});  // 해당 ID를 가진 To-Do 삭제
-  const todoList = await col.find({}).toArray();
 
   res.render('index', {
     todoList: todoList
