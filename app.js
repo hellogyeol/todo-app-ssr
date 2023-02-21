@@ -28,62 +28,39 @@ app.use(methodOverride('_method'));
 
 /* 라우팅 */
 app.get('/', (req, res) => {
-  renderToDoList(res);
+  renderToDoList();
+  async function renderToDoList() {
+    await client.connect();
+    const col = client.db('ssrDb').collection('ssrCol');
+    const todoList = await col.find({}).toArray();
+    console.log(todoList);
+  
+    res.render('index', {
+      todoList: todoList
+    });
+  }
 });
 
 app.post('/', (req, res) => {
-  clearToDoList(res);
+  addToDo();
+  async function addToDo() {
+    await client.connect();
+    const col = client.db('ssrDb').collection('ssrCol');
+    const todoList = await col.find({}).toArray();
+    await col.insertOne({
+      id: String(Date.now()),
+      content: req.body.content
+    });
+    console.log(todoList);
+    
+    res.render('index', {
+      todoList: todoList
+    });
+  }
 });
 
-app.post('/todo', (req, res) => {
-  addToDo(req, res);
-});
 
 /* 웹서버 포트 지정 */
 app.listen(port, () => {
   console.log(`To-Do app listening on port ${port}`);
 });
-
-/* 함수 선언 */
-
-/**
- * To-Do 목록 조회 함수.
- * DB에서 목록을 조회 후 클라이언트에게 전달
- */
-async function renderToDoList(res) {
-  await client.connect();
-  const col = client.db('ssrDb').collection('ssrCol');
-  const todoList = await col.find({}).toArray();
-  console.log(todoList);
-
-  res.render('index', {
-    todoList: todoList
-  });
-}
-
-async function clearToDoList(res) {
-  await client.connect();
-  const col = client.db('ssrDb').collection('ssrCol');
-  await col.deleteMany({})
-  const todoList = await col.find({}).toArray();
-  console.log(todoList);
-
-  res.render('index', {
-    todoList: todoList
-  });
-}
-
-async function addToDo(req, res) {
-  await client.connect();
-  const col = client.db('ssrDb').collection('ssrCol');
-  await col.insertOne({
-    id: String(Date.now()),
-    content: req.body.content
-  });
-  const todoList = await col.find({}).toArray();
-  console.log(todoList);
-
-  res.render('index', {
-    todoList: todoList
-  });
-}
