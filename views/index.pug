@@ -8,8 +8,13 @@ html(lang="ko")
   body
     h1 To-Do App (SSR)
     form(action="/" method="post")
-      input(type="text" name="content")
+      input(type="text" name="content" required)
     ul
       each todo in todoList
         li(id=todo.id)
           span= todo.content
+          form(action="/todo/del", method="post")
+            input(type="hidden" name="id" value=todo.id)
+            button(type="submit") ❌
+    form(action="/clear" method="get")
+      button Clear

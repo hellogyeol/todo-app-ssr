@@ -28,39 +28,78 @@ app.use(methodOverride('_method'));
 
 /* 라우팅 */
 app.get('/', (req, res) => {
-  renderToDoList();
-  async function renderToDoList() {
-    await client.connect();
-    const col = client.db('ssrDb').collection('ssrCol');
-    const todoList = await col.find({}).toArray();
-    console.log(todoList);
-  
-    res.render('index', {
-      todoList: todoList
-    });
-  }
+  renderToDoList(res);
 });
 
 app.post('/', (req, res) => {
-  addToDo();
-  async function addToDo() {
-    await client.connect();
-    const col = client.db('ssrDb').collection('ssrCol');
-    const todoList = await col.find({}).toArray();
-    await col.insertOne({
-      id: String(Date.now()),
-      content: req.body.content
-    });
-    console.log(todoList);
-    
-    res.render('index', {
-      todoList: todoList
-    });
-  }
+  addToDo(req, res);
 });
 
+app.get('/clear', (req, res) => {
+  clearToDoList(res);
+});
+
+app.post('/todo/del', (req, res) => {
+  deleteToDo(req, res);
+});
 
 /* 웹서버 포트 지정 */
 app.listen(port, () => {
   console.log(`To-Do app listening on port ${port}`);
 });
+
+
+
+async function renderToDoList(res) {
+  await client.connect();
+  const col = client.db('ssrDb').collection('ssrCol');
+  const todoList = await col.find({}).toArray();
+  console.log(todoList);
+
+  res.render('index', {
+    todoList: todoList
+  });
+}
+
+async function addToDo(req, res) {
+  await client.connect();
+  const col = client.db('ssrDb').collection('ssrCol');
+  await col.insertOne({
+    id: String(Date.now()),
+    content: req.body.content
+  });
+  const todoList = await col.find({}).toArray();
+  console.log(todoList);
+  
+  res.render('index', {
+    todoList: todoList
+  });
+}
+
+
+async function clearToDoList(res) {
+  await client.connect();
+  const col = client.db('ssrDb').collection('ssrCol');
+  await col.deleteMany({});
+  const todoList = await col.find({}).toArray();
+  console.log(todoList);
+
+  res.render('index', {
+    todoList: todoList
+  });
+}
+
+
+async function deleteToDo(req, res) {
+  await client.connect();
+  const col = client.db('ssrDb').collection('ssrCol');
+  await col.deleteOne({
+    id: req.body.id
+  });
+  const todoList = await col.find({}).toArray();
+  console.log(todoList);
+  
+  res.render('index', {
+    todoList: todoList
+  });
+}
