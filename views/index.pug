@@ -8,7 +8,7 @@ html(lang="ko")
   body
     h1 To-Do App (SSR)
     form(action="/" method="post")
-      input(type="text" name="content" required)
+      input(type="text" name="content" autofocus="true" required)
     ul
       each todo in todoList
         li(id=todo.id)
